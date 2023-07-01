@@ -1,6 +1,5 @@
-from player import Player
-from croupier import Croupier
-from card import Deck
+from participant import Player, Croupier
+from deck import Deck
 
 
 def clean(croupier: Croupier, player: Player, deck: Deck) -> None:
@@ -24,6 +23,27 @@ def croupier_move(croupier: Croupier, player: Player, deck: Deck, difficulty: st
             keep_playing = player_cards_sum
     while croupier.get_cards_sum() < keep_playing:
         croupier.give_card(deck)
+
+
+def stand(croupier: Croupier, player: Player, deck: Deck, difficulty: str, bid: int) -> None:
+    croupier.show_second()
+    show_current_status(croupier, player)
+    croupier_move(croupier, player, deck, difficulty)
+    show_current_status(croupier, player)
+    if player.get_cards_sum() > croupier.get_cards_sum():
+        player.money_won(bid * 2)
+        print('You have won! Account status:', player.get_money())
+        clean(croupier, player, deck)
+        return
+    elif player.get_cards_sum() > croupier.get_cards_sum():
+        player.money_won(bid)
+        print('Draw, account status:', player.get_money())
+        clean(croupier, player, deck)
+        return
+    else:
+        print('You have lost, account status:', player.get_money())
+        clean(croupier, player, deck)
+        return
 
 
 def play_again_split(croupier: Croupier, player: Player, deck: Deck, bid: int, difficulty: str) -> None:
@@ -61,24 +81,7 @@ def play_again(croupier: Croupier, player: Player, deck: Deck, bid: int, difficu
         play_again_split(croupier, player, deck, bid, difficulty)
         return
     if choice == 'stand':
-        croupier.show_second()
-        show_current_status(croupier, player)
-        croupier_move(croupier, player, deck, difficulty)
-        show_current_status(croupier, player)
-        if player.get_cards_sum() > croupier.get_cards_sum():
-            player.money_won(bid * 2)
-            print('You have won! Account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-        elif player.get_cards_sum() > croupier.get_cards_sum():
-            player.money_won(bid)
-            print('Draw, account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-        else:
-            print('You have lost, account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
+        stand(croupier, player, deck, difficulty, bid)
     else:
         print('Wrong input, stand is chosen')
         player.move_cards()
@@ -122,24 +125,7 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
             show_current_status(croupier, player)
             play_again(croupier, player, deck, bid, difficulty)
         elif choice == 'stand':
-            croupier.show_second()
-            show_current_status(croupier, player)
-            croupier_move(croupier, player, deck, difficulty)
-            show_current_status(croupier, player)
-            if player.get_cards_sum() > croupier.get_cards_sum():
-                player.money_won(bid * 2)
-                print('You have won! Account status:', player.get_money())
-                clean(croupier, player, deck)
-                return
-            elif player.get_cards_sum() > croupier.get_cards_sum():
-                player.money_won(bid)
-                print('Draw, account status:', player.get_money())
-                clean(croupier, player, deck)
-                return
-            else:
-                print('You have lost, account status:', player.get_money())
-                clean(croupier, player, deck)
-                return
+            stand(croupier, player, deck, difficulty, bid)
         elif choice == 'split':
             player.take_money(bid)
             player.hide_second()
@@ -199,24 +185,7 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
             clean(croupier, player, deck)
             return
         elif choice == 'stand':
-            croupier.show_second()
-            show_current_status(croupier, player)
-            croupier_move(croupier, player, deck, difficulty)
-            show_current_status(croupier, player)
-            if player.get_cards_sum() > croupier.get_cards_sum():
-                player.money_won(bid * 2)
-                print('You have won! Account status:', player.get_money())
-                clean(croupier, player, deck)
-                return
-            elif player.get_cards_sum() > croupier.get_cards_sum():
-                player.money_won(bid)
-                print('Draw, account status:', player.get_money())
-                clean(croupier, player, deck)
-                return
-            else:
-                print('You have lost, account status:', player.get_money())
-                clean(croupier, player, deck)
-                return
+            stand(croupier, player, deck, difficulty, bid)
         elif choice == 'have insurance' or choice == 'insurance':
             player.take_money(int(bid * 0.5))
             play_again(croupier, player, deck, bid, difficulty)
@@ -241,24 +210,7 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
         clean(croupier, player, deck)
         return
     elif choice == 'stand':
-        croupier.show_second()
-        show_current_status(croupier, player)
-        croupier_move(croupier, player, deck, difficulty)
-        show_current_status(croupier, player)
-        if player.get_cards_sum() > croupier.get_cards_sum():
-            player.money_won(bid * 2)
-            print('You have won! Account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-        elif player.get_cards_sum() > croupier.get_cards_sum():
-            player.money_won(bid)
-            print('Draw, account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-        else:
-            print('You have lost, account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
+        stand(croupier, player, deck, difficulty, bid)
     elif choice == 'double':
         player.take_money(bid)
         player.give_card(deck)
@@ -312,6 +264,7 @@ def main() -> None:
             print('If you want to play again, type \'Y\', to quit type \'n\'')
             starting = str(input())
             if starting == 'n' or starting == 'N':
+                print('Thanks for playing')
                 return
             elif starting == 'Y' or starting == 'y':
                 play(croupier, player, deck, difficulty_level)
