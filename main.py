@@ -1,3 +1,4 @@
+import tkinter as tk
 from participant import Player, Croupier
 from deck import Deck
 
@@ -237,39 +238,70 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
         return
 
 
-def main() -> None:
-    print('Welcome in the blackjack game! If you want to play type \'Y\', to quit type \'n\'')
-    starting = str(input())
-    if starting == 'n' or starting == 'N':
+def start_game(difficulty_level: tk.StringVar, starting_money: tk.IntVar) -> None:
+    game = tk.Tk()
+    game.title('Blackjack')  # nawza na pasku
+    game.geometry('800x600')  # wymiary okna
+
+    difficulty_level = difficulty_level.get()  # oraz poziomu trudności
+    if difficulty_level == '':
+        difficulty_level = 'medium'
+    try:
+        starting_money = starting_money.get()  # bezpieczne ustawienie wartości początkowej stanu konta
+    except ValueError:
+        starting_money = 5000
+    print(starting_money, difficulty_level)
+    croupier = Croupier()  # stworzenie instacnji Croupier
+    player = Player(starting_money)  # stworzenie instacnji Player
+    deck = Deck()  # stworzenie instacnji Deck
+    play(croupier, player, deck, difficulty_level)  # rozpoczęcie gry
+
+    ################################################## TO DO!
+    if player.get_money() <= 0:
+        print('No money, no honey :(')
         return
-    elif starting == 'Y' or starting == 'y':
-        print('Choose difficulty level, type \'medium\' or \'hard\'')
-        difficulty_level = str(input())
-        if not (difficulty_level == 'medium' or difficulty_level == 'm'
-                or difficulty_level == 'hard' or difficulty_level == 'h'):
-            difficulty_level = 'medium'
-        print('Type amount of money on your starting account')
-        try:
-            starting_money = int(input())
-        except ValueError:
-            starting_money = 5000
-        croupier = Croupier()
-        player = Player(starting_money)
-        deck = Deck()
-        play(croupier, player, deck, difficulty_level)
-        if player.get_money() <= 0:
-            print('No money, no honey :(')
+    while player.get_money() > 0:
+        print('If you want to play again, type \'Y\', to quit type \'n\'')
+        starting = str(input())
+        if starting == 'n' or starting == 'N':
+            print('Thanks for playing')
             return
-        while player.get_money() > 0:
-            print('If you want to play again, type \'Y\', to quit type \'n\'')
-            starting = str(input())
-            if starting == 'n' or starting == 'N':
-                print('Thanks for playing')
-                return
-            elif starting == 'Y' or starting == 'y':
-                play(croupier, player, deck, difficulty_level)
-    else:
-        return
+        elif starting == 'Y' or starting == 'y':
+            play(croupier, player, deck, difficulty_level)
+
+    #################################################
+
+    game.mainloop()  ######################### NIE WIEM GDZIE TO POSATWIĆ
+
+
+def main() -> None:
+    root = tk.Tk()  # główne okno
+    root.title('Blackjack')  # nawza na pasku
+    root.geometry('300x220')  # wymiary okna
+
+    welcoming_label = tk.Label(root, text='Welcome in the blackjack game!')
+    welcoming_label.pack()  # umieszcza napis witający
+    info_label = tk.Label(root, text='Select starting configuration')
+    info_label.pack()  # umieszcza napis informujący o konfiguracji gry
+    difficulty_level_info = tk.Label(root, text='Choose diffiuclty level:')
+    difficulty_level_info.pack()  # umieszcza napis informujący o wyborze trudności
+    difficulty_level = tk.StringVar()
+    medium_radio = tk.Radiobutton(root, text='medium', variable=difficulty_level, value='medium')
+    medium_radio.pack()  # umieszcza przycisk wyboru poziomu trudności
+    hard_radio = tk.Radiobutton(root, text='hard', variable=difficulty_level, value='hard')
+    hard_radio.pack()  # umieszcza przycisk wyboru poziomu trudności
+    starting_money_info = tk.Label(root, text='Type amount of money on your starting account:')
+    starting_money_info.pack()  # umieszcza napis, gdzie wpisać wartość konta
+    starting_money = tk.IntVar()  # początkowa wartość konta (str)
+    starting_money_entry = tk.Entry(root, textvariable=starting_money)
+    starting_money_entry.pack()  # umieszcza ramkę, do której można wpisać wartość konta
+    start_button = tk.Button(root, text='Start the game', width=20,
+                             command=lambda: start_game(difficulty_level, starting_money))
+    start_button.pack()  # umieszcza przycisk do rozpoczęcia gry
+    exit_button = tk.Button(root, text='End the game', width=20, command=root.destroy)
+    exit_button.pack()   # umieszcza przycisk do zakończenia gry
+
+    root.mainloop()  # ciągłe wykonywanie dopóki nie zamknie się okna
 
 
 if __name__ == '__main__':
