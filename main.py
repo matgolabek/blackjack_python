@@ -9,10 +9,10 @@ def clean(croupier: Croupier, player: Player, deck: Deck) -> None:
     deck.shuffle_if_needed()
 
 
-def show_current_status(croupier: Croupier, player: Player) -> None:
-    croupier.show_cards()
+def show_current_status(game: tk.Toplevel, croupier: Croupier, player: Player) -> None:
+    croupier.show_cards(game)
     print()
-    player.show_cards()
+    player.show_cards(game)
     print()
 
 
@@ -26,11 +26,11 @@ def croupier_move(croupier: Croupier, player: Player, deck: Deck, difficulty: st
         croupier.give_card(deck)
 
 
-def stand(croupier: Croupier, player: Player, deck: Deck, difficulty: str, bid: int) -> None:
+def stand(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, difficulty: str, bid: int) -> None:
     croupier.show_second()
-    show_current_status(croupier, player)
+    show_current_status(game, croupier, player)
     croupier_move(croupier, player, deck, difficulty)
-    show_current_status(croupier, player)
+    show_current_status(game, croupier, player)
     if player.get_cards_sum() > croupier.get_cards_sum():
         player.money_won(bid * 2)
         print('You have won! Account status:', player.get_money())
@@ -47,17 +47,17 @@ def stand(croupier: Croupier, player: Player, deck: Deck, difficulty: str, bid: 
         return
 
 
-def play_again_split(croupier: Croupier, player: Player, deck: Deck, bid: int, difficulty: str) -> None:
+def play_again_split(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid: int, difficulty: str) -> None:
     if player.get_cards_sum() > 21:
-        show_current_status(croupier, player)
+        show_current_status(game, croupier, player)
         print('Your hand has lost')
         return
     print('Do you want to hit or stand?')
     choice = str(input())
     if choice == 'hit':
         player.give_card(deck)
-        show_current_status(croupier, player)
-        play_again_split(croupier, player, deck, bid, difficulty)
+        show_current_status(game, croupier, player)
+        play_again_split(game, croupier, player, deck, bid, difficulty)
         return
     if choice == 'stand':
         player.move_cards()
@@ -68,51 +68,63 @@ def play_again_split(croupier: Croupier, player: Player, deck: Deck, bid: int, d
         return
 
 
-def play_again(croupier: Croupier, player: Player, deck: Deck, bid: int, difficulty: str) -> None:
+def play_again(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid: int, difficulty: str) -> None:
     if player.get_cards_sum() > 21:
         croupier.show_second()
-        show_current_status(croupier, player)
+        show_current_status(game, croupier, player)
         print('You have lost, account status: ', player.get_money())
         return
     print('Do you want to hit or stand?')
     choice = str(input())
     if choice == 'hit':
         player.give_card(deck)
-        show_current_status(croupier, player)
-        play_again_split(croupier, player, deck, bid, difficulty)
+        show_current_status(game, croupier, player)
+        play_again_split(game, croupier, player, deck, bid, difficulty)
         return
     if choice == 'stand':
-        stand(croupier, player, deck, difficulty, bid)
+        stand(game, croupier, player, deck, difficulty, bid)
     else:
         print('Wrong input, stand is chosen')
         player.move_cards()
         return
 
 
-def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medium') -> None:
+def set_bid(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medium'):
     if player.get_money() <= 0:
-        print('No money, no honey :(')
+        tk.Label(game, text='No money, no honey :(').pack()  # umieszcza wiadomość i kończy
         return
-    print('How much money do you bid?')
+    tk.Label(game, text='How much money do you bid?').pack()
+
+    bid = tk.IntVar()  # wartość stawki (str)
+    bid.set(100)
+    bid_entry = tk.Entry(game, textvariable=bid)
+    bid_entry.pack()  # umieszcza ramkę, do której można wpisać wartość stawki
+    submit_bid = tk.Button(game, text='Submit the bid', width=20,
+                           command=lambda: play(game, croupier, player, deck, bid, difficulty))
+    submit_bid.pack()  # przycisk zatwierdzający stawkę
+
+    game.mainloop()
+
+
+def play(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid: tk.IntVar, difficulty: str) -> None:
     try:
-        bid = int(input())
+        bid = bid.get()  # bezpieczne ustawienie wartości stawki
     except ValueError:
-        print('Wrong input')
+        bid = 100
+    if bid <= 0:  # sprawdzenie ujemnych stawek
+        tk.Label(game, text='You cannot bid negative values').pack()
         return
-    if bid <= 0:
-        print('You cannot bid negative values')
-        return
-    if player.get_money() - bid < 0:
-        print('You have {}, cannot bid {}'.format(player.get_money(), bid))
-        play_again(croupier, player, deck, bid, difficulty)
+    if player.get_money() - bid < 0:  # sprawdzenie czy saldo dodatnie
+        tk.Label(game, text='You have {}, cannot bid {}'.format(player.get_money(), bid)).pack()
+        set_bid(game, croupier, player, deck, difficulty)
         clean(croupier, player, deck)
         return
-    player.take_money(bid)
+    player.take_money(bid)  # pobranie pieniędzy
+    croupier.give_card(deck)  # podanie krupierowi dwóch kart
     croupier.give_card(deck)
-    croupier.give_card(deck)
+    player.give_card(deck)  # podanie graczowi dwóch kart
     player.give_card(deck)
-    player.give_card(deck)
-    show_current_status(croupier, player)
+    show_current_status(game, croupier, player)  # wyświetlenie kart
     if player.is_blackjack():
         player.money_won(int(bid * 2.5))
         print('You have got blackjack! Account status:', player.get_money())
@@ -123,24 +135,24 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
         choice = str(input())
         if choice == 'hit':
             player.give_card(deck)
-            show_current_status(croupier, player)
-            play_again(croupier, player, deck, bid, difficulty)
+            show_current_status(game, croupier, player)
+            play_again(game, croupier, player, deck, bid, difficulty)
         elif choice == 'stand':
-            stand(croupier, player, deck, difficulty, bid)
+            stand(game, croupier, player, deck, difficulty, bid)
         elif choice == 'split':
             player.take_money(bid)
             player.hide_second()
             player.give_card(deck)
-            show_current_status(croupier, player)
-            play_again_split(croupier, player, deck, bid, difficulty)
+            show_current_status(game, croupier, player)
+            play_again_split(game, croupier, player, deck, bid, difficulty)
             player.show_second()
             player.give_card(deck)
-            show_current_status(croupier, player)
-            play_again_split(croupier, player, deck, bid, difficulty)
+            show_current_status(game, croupier, player)
+            play_again_split(game, croupier, player, deck, bid, difficulty)
             croupier.show_second()
-            show_current_status(croupier, player)
+            show_current_status(game, croupier, player)
             croupier_move(croupier, player, deck, difficulty)
-            show_current_status(croupier, player)
+            show_current_status(game, croupier, player)
             if player.get_cards_sum() > croupier.get_cards_sum():
                 player.money_won(bid * 2)
                 print('Your second hand won!')
@@ -181,15 +193,15 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
         choice = str(input())
         if choice == 'hit':
             player.give_card(deck)
-            show_current_status(croupier, player)
-            play_again(croupier, player, deck, bid, difficulty)
+            show_current_status(game, croupier, player)
+            play_again(game, croupier, player, deck, bid, difficulty)
             clean(croupier, player, deck)
             return
         elif choice == 'stand':
-            stand(croupier, player, deck, difficulty, bid)
+            stand(game, croupier, player, deck, difficulty, bid)
         elif choice == 'have insurance' or choice == 'insurance':
             player.take_money(int(bid * 0.5))
-            play_again(croupier, player, deck, bid, difficulty)
+            play_again(game, croupier, player, deck, bid, difficulty)
             if croupier.is_blackjack():
                 player.money_won(bid)
                 print('Croupier has blackjack, you have won your insurance, account status', player.get_money())
@@ -206,19 +218,19 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
     choice = str(input())
     if choice == 'hit':
         player.give_card(deck)
-        show_current_status(croupier, player)
-        play_again(croupier, player, deck, bid, difficulty)
+        show_current_status(game, croupier, player)
+        play_again(game, croupier, player, deck, bid, difficulty)
         clean(croupier, player, deck)
         return
     elif choice == 'stand':
-        stand(croupier, player, deck, difficulty, bid)
+        stand(game, croupier, player, deck, difficulty, bid)
     elif choice == 'double':
         player.take_money(bid)
         player.give_card(deck)
         croupier.show_second()
-        show_current_status(croupier, player)
+        show_current_status(game, croupier, player)
         croupier_move(croupier, player, deck, difficulty)
-        show_current_status(croupier, player)
+        show_current_status(game, croupier, player)
         if player.get_cards_sum() > croupier.get_cards_sum():
             player.money_won(bid * 4)
             print('You have won! Account status:', player.get_money())
@@ -239,7 +251,7 @@ def play(croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medi
 
 
 def start_game(difficulty_level: tk.StringVar, starting_money: tk.IntVar) -> None:
-    game = tk.Tk()
+    game = tk.Toplevel()
     game.title('Blackjack')  # nawza na pasku
     game.geometry('800x600')  # wymiary okna
 
@@ -250,28 +262,12 @@ def start_game(difficulty_level: tk.StringVar, starting_money: tk.IntVar) -> Non
         starting_money = starting_money.get()  # bezpieczne ustawienie wartości początkowej stanu konta
     except ValueError:
         starting_money = 5000
-    print(starting_money, difficulty_level)
     croupier = Croupier()  # stworzenie instacnji Croupier
     player = Player(starting_money)  # stworzenie instacnji Player
     deck = Deck()  # stworzenie instacnji Deck
-    play(croupier, player, deck, difficulty_level)  # rozpoczęcie gry
+    set_bid(game, croupier, player, deck, difficulty_level)  # rozpoczęcie gry
 
-    ################################################## TO DO!
-    if player.get_money() <= 0:
-        print('No money, no honey :(')
-        return
-    while player.get_money() > 0:
-        print('If you want to play again, type \'Y\', to quit type \'n\'')
-        starting = str(input())
-        if starting == 'n' or starting == 'N':
-            print('Thanks for playing')
-            return
-        elif starting == 'Y' or starting == 'y':
-            play(croupier, player, deck, difficulty_level)
-
-    #################################################
-
-    game.mainloop()  ######################### NIE WIEM GDZIE TO POSATWIĆ
+    game.mainloop()
 
 
 def main() -> None:
@@ -286,6 +282,7 @@ def main() -> None:
     difficulty_level_info = tk.Label(root, text='Choose diffiuclty level:')
     difficulty_level_info.pack()  # umieszcza napis informujący o wyborze trudności
     difficulty_level = tk.StringVar()
+    difficulty_level.set('medium')  # domyślna waartość poziomu trudności na wyświetlaczu
     medium_radio = tk.Radiobutton(root, text='medium', variable=difficulty_level, value='medium')
     medium_radio.pack()  # umieszcza przycisk wyboru poziomu trudności
     hard_radio = tk.Radiobutton(root, text='hard', variable=difficulty_level, value='hard')
@@ -293,12 +290,13 @@ def main() -> None:
     starting_money_info = tk.Label(root, text='Type amount of money on your starting account:')
     starting_money_info.pack()  # umieszcza napis, gdzie wpisać wartość konta
     starting_money = tk.IntVar()  # początkowa wartość konta (str)
+    starting_money.set(5000)  # domyślna wartość pieniędzy na wyświetlaczu
     starting_money_entry = tk.Entry(root, textvariable=starting_money)
     starting_money_entry.pack()  # umieszcza ramkę, do której można wpisać wartość konta
     start_button = tk.Button(root, text='Start the game', width=20,
                              command=lambda: start_game(difficulty_level, starting_money))
     start_button.pack()  # umieszcza przycisk do rozpoczęcia gry
-    exit_button = tk.Button(root, text='End the game', width=20, command=root.destroy)
+    exit_button = tk.Button(root, text='End the game', width=20, command=root.quit)
     exit_button.pack()   # umieszcza przycisk do zakończenia gry
 
     root.mainloop()  # ciągłe wykonywanie dopóki nie zamknie się okna
