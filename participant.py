@@ -102,6 +102,11 @@ class Croupier(Participant):
         self._cards = []
         self.__show_second = False
 
+    """
+    Zastanawiam się czy nie usunąć text z Label !!!!!!!!!!!!!!!!!
+    Trzeba zmienić pack na grid i sensownie układać karty obok siebie !!!!!!!!
+    """
+
     def show_cards(self, game: tk.Toplevel) -> None:
         tk.Label(game, text='Croupier\'s cards:').pack()  # umieszcza napis o kartach krupiera
         if self.__show_second:

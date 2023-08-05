@@ -255,6 +255,14 @@ def start_game(difficulty_level: tk.StringVar, starting_money: tk.IntVar) -> Non
     game.title('Blackjack')  # nawza na pasku
     game.geometry('800x600')  # wymiary okna
 
+    try:
+        background_label = tk.Label(game)  # grafika stołu
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)  # umieszczenie pod innymi elementami
+        background_label.image = tk.PhotoImage(file='graphics/tables/Motyw_jasny.png')
+        background_label.configure(image=background_label.image)
+    except FileNotFoundError:
+        pass  # gdy nie znajdzie grafiki stołu
+
     difficulty_level = difficulty_level.get()  # oraz poziomu trudności
     if difficulty_level == '':
         difficulty_level = 'medium'
