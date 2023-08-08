@@ -1,16 +1,25 @@
 from deck import Card, Deck
 from copy import deepcopy
+import tkinter as tk
 
 
 class Participant:
     def __init__(self) -> None:
         self._cards = []
+        self._num_of_cards = len(self._cards)
+        self._visible_cards = []
 
     def give_card(self, deck: Deck) -> None:
         self._cards.append(deck.take_card())
 
     def clean_hand(self) -> None:
         self._cards = []
+
+    def get_num_of_cards(self) -> int:
+        return self._num_of_cards
+
+    def get_visible_cards(self):
+        return self._visible_cards
 
     def get_cards_sum(self) -> int:
         has_ace = False
@@ -26,9 +35,22 @@ class Participant:
                 cards_sum += 10
         return cards_sum
 
-    def show_cards_(self) -> None:
-        for card in self._cards:
-            print('{} of {}'.format(card.get_name(), card.get_suit()))
+    def show_cards(self, game: tk.Toplevel, position) -> None:
+        self._num_of_cards = len(self._cards)
+        for i, card in enumerate(self._cards):
+            img_label = tk.Label(game)  # etykieta do podpięcia referencji na obrazek
+            img_label.place(anchor='center', relx=(.5 - (self._num_of_cards - 1) * 0.05) + i * 0.1,
+                            rely=position)  # bez niego uchwyt do obrazka zostaje utracony i wyświetla się nic
+            try:
+                path = 'graphics/cards/{}/{}.png'.format(card.get_suit(), card.get_name())
+                img_label.image = tk.PhotoImage(file=path)
+                img_label.configure(image=img_label.image)  # połączenie obrazka z uchwytem
+            except FileNotFoundError:  # gdy nie ma obrazka to wyśweitla słownie
+                img_label.config(text='{} of {}'.format(card.get_name(), card.get_suit()))
+            except tk.TclError:
+                img_label.config(text='{} of {}'.format(card.get_name(), card.get_suit()))
+            finally:
+                self._visible_cards.append(img_label)
 
 
 class Player(Participant):
@@ -41,9 +63,9 @@ class Player(Participant):
     def take_money(self, money: int) -> None:
         self.__money -= money
 
-    def show_cards(self) -> None:
-        print('Player\'s cards:')
-        self.show_cards_()
+    def show_cards(self, game: tk.Toplevel) -> None:
+        tk.Label(game, text='Player\'s cards:').place(anchor='center', relx=.5, rely=.65)
+        super().show_cards(game, .8)
 
     def is_blackjack(self) -> bool:
         if self._cards[0].get_name() == 'Ace':
@@ -92,14 +114,32 @@ class Croupier(Participant):
         self._cards = []
         self.__show_second = False
 
-    def show_cards(self) -> None:
-        print('Croupier\'s cards:')
+    def show_cards(self, game: tk.Toplevel) -> None:
+        tk.Label(game, text='Croupier\'s cards:').place(anchor='center', relx=.5,
+                                                        rely=.1)  # umieszcza napis o kartach krupiera
         if self.__show_second:
-            self.show_cards_()
+            super().show_cards(game, .25)
         else:
             card = self._cards[0]
-            print('{} of {}'.format(card.get_name(), card.get_suit()))
-            print('Hidden card')
+            img_label = tk.Label(game)  # etykieta, aby podpiąć do niej referencję na obrazek
+            img_label.place(anchor='center', relx=.45,
+                            rely=.25)  # bez niego uchwyt do obrazka zostaje utracony i wyświetla się nic
+            try:
+                path = 'graphics/cards/{}/{}.png'.format(card.get_suit(), card.get_name())
+                img_label.image = tk.PhotoImage(file=path)  # pobranie obrazka
+                img_label.configure(image=img_label.image)  # zapisanie go w etykiecie
+            except FileNotFoundError:  # jak nie znajduje obrazka (bo go nie ma) to wyświetla słownie kartę
+                img_label.config(text='{} of {}'.format(card.get_name(), card.get_suit()))
+            except tk.TclError:
+                img_label.config(text='{} of {}'.format(card.get_name(), card.get_suit()))
+            finally:
+                self._visible_cards.append(img_label)
+                img_label = tk.Label(game)  # Wyświetlenie zakrytej karty
+                img_label.place(anchor='center', relx=.55, rely=.25)
+                path = 'graphics/decks/main_deck.png'  # W PRZYSZŁOŚCI WIĘCEJ OPCJI GRAFICZNYCH
+                img_label.image = tk.PhotoImage(file=path)  # pobranie obrazka
+                img_label.configure(image=img_label.image)  # zapisanie go w etykiecie
+                self._visible_cards.append(img_label)
 
     def is_first_card_ace(self) -> bool:
         if self._cards[0].get_name() == 'Ace':

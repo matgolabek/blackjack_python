@@ -20,6 +20,9 @@ class Card:
     def get_index(self) -> int:
         return self.__index
 
+    def __repr__(self) -> str:
+        return f'{self.__name} of {self.__suit}'
+
 
 class Deck:
     def __init__(self) -> None:
@@ -90,20 +93,19 @@ class Deck:
             Card("2", "Clubs", 2, 51)
         ]
 
-        random_indexes = [i for i in range(52)]
+        random_indexes = [i // 2 for i in range(104)]
         random.shuffle(random_indexes)
-        self.__shuffled_deck = [Card() for _ in range(52)]
-        for i in range(52):
+        self.__shuffled_deck = [Card() for _ in range(104)]
+        for i in range(104):
             self.__shuffled_deck[i] = self.__default_deck[random_indexes[i]]
 
     def shuffle_if_needed(self) -> None:
-        if len(self.__shuffled_deck) < 20:
-            random_indexes = [i for i in range(52)]
+        if len(self.__shuffled_deck) < 52:
+            random_indexes = [i // 2 for i in range(104)]
             random.shuffle(random_indexes)
-            self.__shuffled_deck = [Card() for _ in range(52)]
-            for i in range(52):
+            self.__shuffled_deck = [Card() for _ in range(104)]
+            for i in range(104):
                 self.__shuffled_deck[i] = self.__default_deck[random_indexes[i]]
-            print('Shuffled')
 
     def take_card(self) -> Card:
         try:
