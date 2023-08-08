@@ -22,6 +22,10 @@ def clean(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck) -> 
 
 
 def show_current_status(game: tk.Toplevel, croupier: Croupier, player: Player) -> None:
+    for widget in croupier.get_visible_cards():
+        widget.destroy()
+    for widget in player.get_visible_cards():
+        widget.destroy()
     croupier.show_cards(game)
     player.show_cards(game)
 
@@ -113,7 +117,7 @@ def stand(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, dif
         player.money_won(bid * 2)
         show_win_info(game, croupier, player, deck)
         return
-    elif player.get_cards_sum() > croupier.get_cards_sum():
+    elif player.get_cards_sum() == croupier.get_cards_sum():
         player.money_won(bid)
         show_draw_info(game, croupier, player, deck)
         return
