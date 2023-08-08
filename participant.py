@@ -27,18 +27,19 @@ class Participant:
                 cards_sum += 10
         return cards_sum
 
-    def show_cards(self, game: tk.Toplevel) -> None:
+    def show_cards(self, game: tk.Toplevel, position) -> None:
+        num_of_cards = len(self._cards)
         for i, card in enumerate(self._cards):
-            img_label = tk.Label(game, text='Card {}:'.format(i + 1))  # napis do podpięcia referencji na obrazek
-            img_label.pack()  # bez niego uchwyt do obrazka zostaje utracony i wyświetla się nic
+            img_label = tk.Label(game)  # etykieta do podpięcia referencji na obrazek
+            img_label.place(anchor='center', relx=(.5 - (num_of_cards - 1) * 0.05) + i * 0.1, rely=position)  # bez niego uchwyt do obrazka zostaje utracony i wyświetla się nic
             try:
                 path = 'graphics/cards/{}/{}.png'.format(card.get_suit(), card.get_name())
                 img_label.image = tk.PhotoImage(file=path)
                 img_label.configure(image=img_label.image)  # połączenie obrazka z uchwytem
             except FileNotFoundError:  # gdy nie ma obrazka to wyśweitla słownie
-                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).pack()
+                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).place(anchor='center', relx=(.5 - (num_of_cards - 1) * 0.05) + i * 0.1, rely=position)
             except tk.TclError:
-                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).pack()
+                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).place(anchor='center', relx=(.5 - (num_of_cards - 1) * 0.05) + i * 0.1, rely=position)
 
 
 class Player(Participant):
@@ -52,8 +53,8 @@ class Player(Participant):
         self.__money -= money
 
     def show_cards(self, game: tk.Toplevel) -> None:
-        tk.Label(game, text='Player\'s cards:').pack()
-        super().show_cards(game)
+        tk.Label(game, text='Player\'s cards:').place(anchor='center', relx=.5, rely=.1)
+        super().show_cards(game, .25)
 
     def is_blackjack(self) -> bool:
         if self._cards[0].get_name() == 'Ace':
@@ -102,31 +103,25 @@ class Croupier(Participant):
         self._cards = []
         self.__show_second = False
 
-    """
-    Zastanawiam się czy nie usunąć text z Label !!!!!!!!!!!!!!!!!
-    Trzeba zmienić pack na grid i sensownie układać karty obok siebie !!!!!!!!
-    """
-
     def show_cards(self, game: tk.Toplevel) -> None:
-        tk.Label(game, text='Croupier\'s cards:').pack()  # umieszcza napis o kartach krupiera
+        tk.Label(game, text='Croupier\'s cards:').place(anchor='center', relx=.5, rely=.65)  # umieszcza napis o kartach krupiera
         if self.__show_second:
-            super().show_cards(game)
+            super().show_cards(game, .6)
         else:
             card = self._cards[0]
-            img_label = tk.Label(game, text='Card 1:')  # napis, aby podpiąć do niego referencję na obrazek
-            img_label.pack()  # bez niego uchwyt do obrazka zostaje utracony i wyświetla się nic
+            img_label = tk.Label(game)  # etykieta, aby podpiąć do niej referencję na obrazek
+            img_label.place(anchor='center', relx=.45, rely=.8)  # bez niego uchwyt do obrazka zostaje utracony i wyświetla się nic
             try:
                 path = 'graphics/cards/{}/{}.png'.format(card.get_suit(), card.get_name())
                 img_label.image = tk.PhotoImage(file=path)  # pobranie obrazka
                 img_label.configure(image=img_label.image)  # zapisanie go w etykiecie
             except FileNotFoundError:  # jak nie znajduje obrazka (bo go nie ma) to wyświetla słownie kartę
-                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).pack()
+                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).place(anchor='center', relx=.4, rely=.85)
             except tk.TclError:
-                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).pack()
+                tk.Label(game, text='{} of {}'.format(card.get_name(), card.get_suit())).place(anchor='center', relx=.4, rely=.85)
             finally:
-                img_label = tk.Label(game, text='Card 2:')  # Wyświetlenie zakrytej karty
-                img_label.pack()
-                # tk.Label(game, text='Hidden card').pack()
+                img_label = tk.Label(game)  # Wyświetlenie zakrytej karty
+                img_label.place(anchor='center', relx=.55, rely=.8)
                 path = 'graphics/decks/main_deck.png'  # W PRZYSZŁOŚCI WIĘCEJ OPCJI GRAFICZNYCH
                 img_label.image = tk.PhotoImage(file=path)  # pobranie obrazka
                 img_label.configure(image=img_label.image)  # zapisanie go w etykiecie

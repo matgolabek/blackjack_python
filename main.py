@@ -1,9 +1,18 @@
 import tkinter as tk
 from participant import Player, Croupier
 from deck import Deck
+import time
 
 
 def clean(croupier: Croupier, player: Player, deck: Deck) -> None:
+    """
+    MUSI CZYŚCIĆ STÓŁ Z GRAFIK !!!!!!!!!!!!!!! TO DO
+    :param croupier:
+    :param player:
+    :param deck:
+    :return:
+    """
+    time.sleep(3)  # Aby użytkownik zobaczył napis podsumowujący poprzednią grę
     croupier.clean_hand()
     player.clean_hand()
     deck.shuffle_if_needed()
@@ -11,9 +20,7 @@ def clean(croupier: Croupier, player: Player, deck: Deck) -> None:
 
 def show_current_status(game: tk.Toplevel, croupier: Croupier, player: Player) -> None:
     croupier.show_cards(game)
-    print()
     player.show_cards(game)
-    print()
 
 
 def croupier_move(croupier: Croupier, player: Player, deck: Deck, difficulty: str) -> None:
@@ -33,16 +40,16 @@ def stand(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, dif
     show_current_status(game, croupier, player)
     if player.get_cards_sum() > croupier.get_cards_sum():
         player.money_won(bid * 2)
-        print('You have won! Account status:', player.get_money())
+        tk.Label(game, text=f'You have won! Account status: {player.get_money()}', font=('Arial', 20)).place(anchor='center', relx=.5, rely=.5)
         clean(croupier, player, deck)
         return
     elif player.get_cards_sum() > croupier.get_cards_sum():
         player.money_won(bid)
-        print('Draw, account status:', player.get_money())
+        tk.Label(game, text=f'Draw! Account status: {player.get_money()}', font=('Arial', 20)).place(anchor='center', relx=.5, rely=.5)
         clean(croupier, player, deck)
         return
     else:
-        print('You have lost, account status:', player.get_money())
+        tk.Label(game, text=f'You have lost, account status: {player.get_money()}', font=('Arial', 20)).place(anchor='center', relx=.5, rely=.5)
         clean(croupier, player, deck)
         return
 
@@ -50,58 +57,64 @@ def stand(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, dif
 def play_again_split(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid: int, difficulty: str) -> None:
     if player.get_cards_sum() > 21:
         show_current_status(game, croupier, player)
-        print('Your hand has lost')
+        tk.Label(game, text=f'Your hand has lost', font=('Arial', 20)).place(anchor='center', relx=.5, rely=.5)
         return
-    print('Do you want to hit or stand?')
-    choice = str(input())
-    if choice == 'hit':
-        player.give_card(deck)
-        show_current_status(game, croupier, player)
-        play_again_split(game, croupier, player, deck, bid, difficulty)
-        return
-    if choice == 'stand':
-        player.move_cards()
-        return
-    else:
-        print('Wrong input, stand is chosen')
-        player.move_cards()
-        return
+
+    tk.Button(game, text='Hit', width=20, command=lambda: decision_pas('hit')).place(anchor='center', relx=.8, rely=.45)
+    tk.Button(game, text='Stand', width=20, command=lambda: decision_pas('stand')).place(anchor='center', relx=.8, rely=.55)
+
+    def decision_pas(choice: str):
+        if choice == 'hit':
+            player.give_card(deck)
+            show_current_status(game, croupier, player)
+            play_again_split(game, croupier, player, deck, bid, difficulty)
+            return
+        if choice == 'stand':
+            player.move_cards()
+            return
+        else:
+            print('Wrong input, stand is chosen')
+            player.move_cards()
+            return
 
 
 def play_again(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid: int, difficulty: str) -> None:
     if player.get_cards_sum() > 21:
         croupier.show_second()
         show_current_status(game, croupier, player)
-        print('You have lost, account status: ', player.get_money())
+        tk.Label(game, text=f'You have lost, account status: {player.get_money()}', font=('Arial', 20)).place(anchor='center', relx=.5, rely=.5)
         return
-    print('Do you want to hit or stand?')
-    choice = str(input())
-    if choice == 'hit':
-        player.give_card(deck)
-        show_current_status(game, croupier, player)
-        play_again_split(game, croupier, player, deck, bid, difficulty)
-        return
-    if choice == 'stand':
-        stand(game, croupier, player, deck, difficulty, bid)
-    else:
-        print('Wrong input, stand is chosen')
-        player.move_cards()
-        return
+
+    tk.Button(game, text='Hit', width=20, command=lambda: decision_pa('hit')).place(anchor='center', relx=.8, rely=.45)
+    tk.Button(game, text='Stand', width=20, command=lambda: decision_pa('stand')).place(anchor='center', relx=.8, rely=.55)
+
+    def decision_pa(choice: str):
+        if choice == 'hit':
+            player.give_card(deck)
+            show_current_status(game, croupier, player)
+            play_again_split(game, croupier, player, deck, bid, difficulty)
+            return
+        if choice == 'stand':
+            stand(game, croupier, player, deck, difficulty, bid)
+        else:
+            print('Wrong input, stand is chosen')
+            player.move_cards()
+            return
 
 
 def set_bid(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, difficulty: str = 'medium'):
     if player.get_money() <= 0:
-        tk.Label(game, text='No money, no honey :(').pack()  # umieszcza wiadomość i kończy
+        tk.Label(game, text='No money, no honey :(').place(anchor='center', relx=.15, rely=.45)  # umieszcza wiadomość i kończy
         return
-    tk.Label(game, text='How much money do you bid?').pack()
+    tk.Label(game, text='How much money do you bid?').place(anchor='center', relx=.15, rely=.45)
 
     bid = tk.IntVar()  # wartość stawki (str)
     bid.set(100)
     bid_entry = tk.Entry(game, textvariable=bid)
-    bid_entry.pack()  # umieszcza ramkę, do której można wpisać wartość stawki
+    bid_entry.place(anchor='center', relx=.15, rely=.5)  # umieszcza ramkę, do której można wpisać wartość stawki
     submit_bid = tk.Button(game, text='Submit the bid', width=20,
                            command=lambda: play(game, croupier, player, deck, bid, difficulty))
-    submit_bid.pack()  # przycisk zatwierdzający stawkę
+    submit_bid.place(anchor='center', relx=.15, rely=.55)  # przycisk zatwierdzający stawkę
 
     game.mainloop()
 
@@ -112,10 +125,10 @@ def play(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid:
     except ValueError:
         bid = 100
     if bid <= 0:  # sprawdzenie ujemnych stawek
-        tk.Label(game, text='You cannot bid negative values').pack()
+        tk.Label(game, text='You cannot bid negative values').place(anchor='center', relx=.15, rely=.6)
         return
     if player.get_money() - bid < 0:  # sprawdzenie czy saldo dodatnie
-        tk.Label(game, text='You have {}, cannot bid {}'.format(player.get_money(), bid)).pack()
+        tk.Label(game, text='You have {}, cannot bid {}'.format(player.get_money(), bid)).place(anchor='center', relx=.15, rely=.6)
         set_bid(game, croupier, player, deck, difficulty)
         clean(croupier, player, deck)
         return
@@ -127,133 +140,144 @@ def play(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid:
     show_current_status(game, croupier, player)  # wyświetlenie kart
     if player.is_blackjack():
         player.money_won(int(bid * 2.5))
-        print('You have got blackjack! Account status:', player.get_money())
+        tk.Label(game, text=f'You have got blackjack! Account status: {player.get_money()}', font=('Arial', 20)).place(anchor='center', relx=.5, rely=.5)
         clean(croupier, player, deck)
         return
     if player.can_split() and player.get_money() > bid:
-        print('Do you want to hit, stand or split?')
-        choice = str(input())
+
+        tk.Button(game, text='Hit', width=20, command=lambda: decision_split('hit')).place(anchor='center', relx=.8, rely=.45)
+        tk.Button(game, text='Stand', width=20, command=lambda: decision_split('stand')).place(anchor='center', relx=.8, rely=.5)
+        tk.Button(game, text='Split', width=20, command=lambda: decision_split('split')).place(anchor='center', relx=.8, rely=.55)
+
+        def decision_split(choice: str):
+            if choice == 'hit':
+                player.give_card(deck)
+                show_current_status(game, croupier, player)
+                play_again(game, croupier, player, deck, bid, difficulty)
+            elif choice == 'stand':
+                stand(game, croupier, player, deck, difficulty, bid)
+            elif choice == 'split':
+                player.take_money(bid)
+                player.hide_second()
+                player.give_card(deck)
+                show_current_status(game, croupier, player)
+                play_again_split(game, croupier, player, deck, bid, difficulty)
+                player.show_second()
+                player.give_card(deck)
+                show_current_status(game, croupier, player)
+                play_again_split(game, croupier, player, deck, bid, difficulty)
+                croupier.show_second()
+                show_current_status(game, croupier, player)
+                croupier_move(croupier, player, deck, difficulty)
+                show_current_status(game, croupier, player)
+                if player.get_cards_sum() > croupier.get_cards_sum():
+                    player.money_won(bid * 2)
+                    tk.Label(game, text='Your second hand won!').place(anchor='center', relx=.5, rely=0.45)
+                    clean(croupier, player, deck)
+                    return
+                if player.get_cards_sum() == croupier.get_cards_sum():
+                    player.money_won(bid)
+                    tk.Label(game, text='Your second hand drew').place(anchor='center', relx=.5, rely=0.45)
+                    clean(croupier, player, deck)
+                    return
+                if player.get_cards_sum() < croupier.get_cards_sum():
+                    tk.Label(game, text='Your second hand lost').place(anchor='center', relx=.5, rely=0.45)
+                    clean(croupier, player, deck)
+                    return
+                player.move_cards_back()
+                if player.get_cards_sum() > croupier.get_cards_sum():
+                    player.money_won(bid * 2)
+                    tk.Label(game, text='Your first hand won!').place(anchor='center', relx=.5, rely=0.55)
+                    clean(croupier, player, deck)
+                    return
+                if player.get_cards_sum() == croupier.get_cards_sum():
+                    player.money_won(bid)
+                    tk.Label(game, text='Your first hand drew').place(anchor='center', relx=.5, rely=0.55)
+                    clean(croupier, player, deck)
+                    return
+                if player.get_cards_sum() < croupier.get_cards_sum():
+                    tk.Label(game, text='Your first hand lost').place(anchor='center', relx=.5, rely=0.55)
+                    clean(croupier, player, deck)
+                    return
+                tk.Label(game, text=f'Account status: {player.get_money()}').place(anchor='center', relx=.15, rely=0.6)
+                clean(croupier, player, deck)
+                return
+            else:
+                print('Wrong choice')
+                return
+    if croupier.is_first_card_ace() and player.get_money() >= bid * 0.5:
+        tk.Button(game, text='Hit', width=20, command=lambda: decision_ins('hit')).place(anchor='center', relx=.8, rely=.45)
+        tk.Button(game, text='Stand', width=20, command=lambda: decision_ins('stand')).place(anchor='center', relx=.8, rely=.5)
+        tk.Button(game, text='Insurance', width=20, command=lambda: decision_ins('insurance')).place(anchor='center', relx=.8, rely=.55)
+
+        def decision_ins(choice):
+            if choice == 'hit':
+                player.give_card(deck)
+                show_current_status(game, croupier, player)
+                play_again(game, croupier, player, deck, bid, difficulty)
+                clean(croupier, player, deck)
+                return
+            elif choice == 'stand':
+                stand(game, croupier, player, deck, difficulty, bid)
+            elif choice == 'insurance':
+                player.take_money(int(bid * 0.5))
+                play_again(game, croupier, player, deck, bid, difficulty)
+                if croupier.is_blackjack():
+                    player.money_won(bid)
+                    tk.Label(game, text=f'Croupier has blackjack, you have won your insurance, account status: {player.get_money()}')
+                    clean(croupier, player, deck)
+                    return
+            else:
+                print('Wrong choice')
+                return
+    if player.get_cards_sum() > 21:
+        tk.Label(game, text=f'You have lost, account status: player.get_money()')
+        clean(croupier, player, deck)
+        return
+
+    tk.Button(game, text='Hit', width=20, command=lambda: decision('hit')).place(anchor='center', relx=.8, rely=.45)
+    tk.Button(game, text='Stand', width=20, command=lambda: decision('stand')).place(anchor='center', relx=.8, rely=.5)
+    tk.Button(game, text='Double', width=20, command=lambda: decision('double')).place(anchor='center', relx=.8, rely=.55)
+
+    def decision(choice: str):
         if choice == 'hit':
             player.give_card(deck)
             show_current_status(game, croupier, player)
             play_again(game, croupier, player, deck, bid, difficulty)
+            clean(croupier, player, deck)
+            return
         elif choice == 'stand':
             stand(game, croupier, player, deck, difficulty, bid)
-        elif choice == 'split':
+        elif choice == 'double':
             player.take_money(bid)
-            player.hide_second()
             player.give_card(deck)
-            show_current_status(game, croupier, player)
-            play_again_split(game, croupier, player, deck, bid, difficulty)
-            player.show_second()
-            player.give_card(deck)
-            show_current_status(game, croupier, player)
-            play_again_split(game, croupier, player, deck, bid, difficulty)
             croupier.show_second()
             show_current_status(game, croupier, player)
             croupier_move(croupier, player, deck, difficulty)
             show_current_status(game, croupier, player)
             if player.get_cards_sum() > croupier.get_cards_sum():
+                player.money_won(bid * 4)
+                print('You have won! Account status:', player.get_money())
+                clean(croupier, player, deck)
+                return
+            elif player.get_cards_sum() > croupier.get_cards_sum():
                 player.money_won(bid * 2)
-                print('Your second hand won!')
+                print('Draw, account status:', player.get_money())
                 clean(croupier, player, deck)
                 return
-            if player.get_cards_sum() == croupier.get_cards_sum():
-                player.money_won(bid)
-                print('Your second hand drew')
-                clean(croupier, player, deck)
-                return
-            if player.get_cards_sum() < croupier.get_cards_sum():
-                print('Your second hand lost')
-                clean(croupier, player, deck)
-                return
-            player.move_cards_back()
-            if player.get_cards_sum() > croupier.get_cards_sum():
-                player.money_won(bid * 2)
-                print('Your first hand won!')
-                clean(croupier, player, deck)
-                return
-            if player.get_cards_sum() == croupier.get_cards_sum():
-                player.money_won(bid)
-                print('Your first hand drew')
-                clean(croupier, player, deck)
-                return
-            if player.get_cards_sum() < croupier.get_cards_sum():
-                print('Your first hand lost')
-                clean(croupier, player, deck)
-                return
-            print('Account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-        else:
-            print('Wrong choice')
-            return
-    if croupier.is_first_card_ace() and player.get_money() >= bid * 0.5:
-        print('Do you want to hit, stand or have insurance?')
-        choice = str(input())
-        if choice == 'hit':
-            player.give_card(deck)
-            show_current_status(game, croupier, player)
-            play_again(game, croupier, player, deck, bid, difficulty)
-            clean(croupier, player, deck)
-            return
-        elif choice == 'stand':
-            stand(game, croupier, player, deck, difficulty, bid)
-        elif choice == 'have insurance' or choice == 'insurance':
-            player.take_money(int(bid * 0.5))
-            play_again(game, croupier, player, deck, bid, difficulty)
-            if croupier.is_blackjack():
-                player.money_won(bid)
-                print('Croupier has blackjack, you have won your insurance, account status', player.get_money())
+            else:
+                print('You have lost, account status:', player.get_money())
                 clean(croupier, player, deck)
                 return
         else:
             print('Wrong choice')
             return
-    if player.get_cards_sum() > 21:
-        print('You have lost, account status:', player.get_money())
-        clean(croupier, player, deck)
-        return
-    print('Do you want to hit, stand or double?')
-    choice = str(input())
-    if choice == 'hit':
-        player.give_card(deck)
-        show_current_status(game, croupier, player)
-        play_again(game, croupier, player, deck, bid, difficulty)
-        clean(croupier, player, deck)
-        return
-    elif choice == 'stand':
-        stand(game, croupier, player, deck, difficulty, bid)
-    elif choice == 'double':
-        player.take_money(bid)
-        player.give_card(deck)
-        croupier.show_second()
-        show_current_status(game, croupier, player)
-        croupier_move(croupier, player, deck, difficulty)
-        show_current_status(game, croupier, player)
-        if player.get_cards_sum() > croupier.get_cards_sum():
-            player.money_won(bid * 4)
-            print('You have won! Account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-        elif player.get_cards_sum() > croupier.get_cards_sum():
-            player.money_won(bid * 2)
-            print('Draw, account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-        else:
-            print('You have lost, account status:', player.get_money())
-            clean(croupier, player, deck)
-            return
-    else:
-        print('Wrong choice')
-        return
 
 
 def start_game(difficulty_level: tk.StringVar, starting_money: tk.IntVar) -> None:
     game = tk.Toplevel()
     game.title('Blackjack')  # nawza na pasku
-    game.geometry('800x600')  # wymiary okna
+    game.geometry('1001x678')  # wymiary okna
 
     try:
         background_label = tk.Label(game)  # grafika stołu
