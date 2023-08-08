@@ -94,7 +94,6 @@ class Deck:
         ]
 
         random_indexes = [i // 2 for i in range(104)]
-        print(random_indexes)
         random.shuffle(random_indexes)
         self.__shuffled_deck = [Card() for _ in range(104)]
         for i in range(104):

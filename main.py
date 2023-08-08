@@ -113,7 +113,10 @@ def stand(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, dif
     show_current_status(game, croupier, player)
     croupier_move(croupier, player, deck, difficulty)
     show_current_status(game, croupier, player)
-    if player.get_cards_sum() > croupier.get_cards_sum():
+    if player.get_cards_sum() > 21:
+        show_lose_info(game, croupier, player, deck)
+        return
+    elif player.get_cards_sum() > croupier.get_cards_sum():
         player.money_won(bid * 2)
         show_win_info(game, croupier, player, deck)
         return
@@ -167,7 +170,7 @@ def play_again(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck
         if choice == 'hit':
             player.give_card(deck)
             show_current_status(game, croupier, player)
-            play_again_split(game, croupier, player, deck, bid, difficulty)
+            play_again(game, croupier, player, deck, bid, difficulty)
             return
         if choice == 'stand':
             stand(game, croupier, player, deck, difficulty, bid)
@@ -251,30 +254,33 @@ def play(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid:
                 show_current_status(game, croupier, player)
                 croupier_move(croupier, player, deck, difficulty)
                 show_current_status(game, croupier, player)
-                if player.get_cards_sum() > croupier.get_cards_sum():
+                if player.get_cards_sum() > 21:
+                    show_lose_info(game, croupier, player, deck, second_hand=True)
+                elif player.get_cards_sum() > croupier.get_cards_sum():
                     player.money_won(bid * 2)
                     show_win_info(game, croupier, player, deck, second_hand=True)
-                    return
-                if player.get_cards_sum() == croupier.get_cards_sum():
+                elif player.get_cards_sum() == croupier.get_cards_sum():
                     player.money_won(bid)
                     show_draw_info(game, croupier, player, deck, second_hand=True)
-                    return
-                if player.get_cards_sum() < croupier.get_cards_sum():
+                elif croupier.get_cards_sum() > 21:
+                    player.money_won(bid * 2)
+                    show_win_info(game, croupier, player, deck, second_hand=True)
+                elif player.get_cards_sum() < croupier.get_cards_sum():
                     show_lose_info(game, croupier, player, deck, second_hand=True)
-                    return
                 player.move_cards_back()
-                if player.get_cards_sum() > croupier.get_cards_sum():
+                if player.get_cards_sum() > 21:
+                    show_lose_info(game, croupier, player, deck, first_hand=True)
+                elif player.get_cards_sum() > croupier.get_cards_sum():
                     player.money_won(bid * 2)
                     show_win_info(game, croupier, player, deck, first_hand=True)
-                    return
-                if player.get_cards_sum() == croupier.get_cards_sum():
+                elif player.get_cards_sum() == croupier.get_cards_sum():
                     player.money_won(bid)
                     show_draw_info(game, croupier, player, deck, first_hand=True)
-                    return
-                if player.get_cards_sum() < croupier.get_cards_sum():
+                elif croupier.get_cards_sum() > 21:
+                    player.money_won(bid * 2)
+                    show_win_info(game, croupier, player, deck, first_hand=True)
+                elif player.get_cards_sum() < croupier.get_cards_sum():
                     show_lose_info(game, croupier, player, deck, first_hand=True)
-                    return
-                #clean(game, croupier, player, deck)
                 return
             else:
                 print('Wrong choice')
@@ -319,7 +325,6 @@ def play(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid:
             player.give_card(deck)
             show_current_status(game, croupier, player)
             play_again(game, croupier, player, deck, bid, difficulty)
-            clean(game, croupier, player, deck)
             return
         elif choice == 'stand':
             stand(game, croupier, player, deck, difficulty, bid)
@@ -330,17 +335,20 @@ def play(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, bid:
             show_current_status(game, croupier, player)
             croupier_move(croupier, player, deck, difficulty)
             show_current_status(game, croupier, player)
-            if player.get_cards_sum() > croupier.get_cards_sum():
+            if player.get_cards_sum() > 21:
+                show_lose_info(game, croupier, player, deck)
+            elif player.get_cards_sum() > croupier.get_cards_sum():
                 player.money_won(bid * 4)
                 show_win_info(game, croupier, player, deck)
-                return
-            elif player.get_cards_sum() > croupier.get_cards_sum():
+            elif player.get_cards_sum() == croupier.get_cards_sum():
                 player.money_won(bid * 2)
                 show_draw_info(game, croupier, player, deck)
-                return
-            else:
+            elif croupier.get_cards_sum() > 21:
+                player.money_won(bid * 4)
+                show_win_info(game, croupier, player, deck)
+            elif player.get_cards_sum() < croupier.get_cards_sum():
                 show_lose_info(game, croupier, player, deck)
-                return
+            return
         else:
             print('Wrong choice')
             return
