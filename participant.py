@@ -114,7 +114,11 @@ class Croupier(Participant):
         self._cards = []
         self.__show_second = False
 
+<<<<<<< Updated upstream
     def show_cards(self, game: tk.Toplevel) -> None:
+=======
+    def show_cards(self, game: tk.Toplevel, deck_g: str) -> None:
+>>>>>>> Stashed changes
         tk.Label(game, text='Croupier\'s cards:').place(anchor='center', relx=.5,
                                                         rely=.1)  # umieszcza napis o kartach krupiera
         if self.__show_second:
@@ -136,8 +140,15 @@ class Croupier(Participant):
                 self._visible_cards.append(img_label)
                 img_label = tk.Label(game)  # Wyświetlenie zakrytej karty
                 img_label.place(anchor='center', relx=.55, rely=.25)
+<<<<<<< Updated upstream
                 path = 'graphics/decks/main_deck.png'  # W PRZYSZŁOŚCI WIĘCEJ OPCJI GRAFICZNYCH
                 img_label.image = tk.PhotoImage(file=path)  # pobranie obrazka
+=======
+                try:
+                    img_label.image = tk.PhotoImage(file=deck_g)  # pobranie obrazka
+                except FileNotFoundError:
+                    img_label.image = tk.PhotoImage(file='graphics/decks/main_deck.png')  # pobranie obrazka
+>>>>>>> Stashed changes
                 img_label.configure(image=img_label.image)  # zapisanie go w etykiecie
                 self._visible_cards.append(img_label)
 
