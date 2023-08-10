@@ -1,6 +1,7 @@
 import tkinter as tk
 from participant import Player, Croupier
 from deck import Deck
+import webbrowser
 
 
 def clean(game: tk.Toplevel, croupier: Croupier, player: Player, deck: Deck, difficulty: str, deck_g: str, table_g: str) -> None:
@@ -391,6 +392,18 @@ def start_game(difficulty_level: tk.StringVar, starting_money: tk.IntVar, deck_g
     game.mainloop()
 
 
+def credits():
+    cr = tk.Toplevel()
+    cr.title('Credits')
+    cr.geometry('200x80')
+
+    tk.Label(cr, text='Source code: Mateusz Gołąbek').pack()
+    tk.Label(cr, text='Graphics design: Jan Gallina').pack()
+    tk.Label(cr, text='AGH UST 2023').pack()
+
+    cr.mainloop()
+
+
 def main() -> None:
     root = tk.Tk()  # główne okno
     root.title('Blackjack')  # nawza na pasku
@@ -463,10 +476,9 @@ def main() -> None:
 
     help = tk.Menu(menubar, tearoff=0)  # opcje pomocy
     menubar.add_cascade(label='Help', menu=help)
-    help.add_command(label='Game rules', command=None)  # link do zasad gry w Blackjacka
+    help.add_command(label='Game rules', command=lambda: webbrowser.open('https://www.officialgamerules.org/blackjack'))  # link do zasad gry w Blackjacka
     help.add_separator()
-    help.add_command(label='Credits', command=None)  # twórcy
-
+    help.add_command(label='Credits', command=credits)  # twórcy
 
     welcoming_label = tk.Label(root, text='Welcome in the blackjack game!')
     welcoming_label.pack()  # umieszcza napis witający
